@@ -51,13 +51,13 @@ Evaluated across all 640 held-out validation pairs ($N=640$ unseen semiconductor
 | Method / Model | Trainable Parameters | PSNR (dB) ↑ *(mean ± std)* | SSIM ↑ *(mean ± std)* | LPIPS ↓ *(mean ± std)* | Single-Image Latency *(RTX 3050 Laptop)* | Throughput *(FPS)* |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
 | **Bicubic Baseline** | — | 23.01 ± 3.65 dB | 0.5286 ± 0.1950 | 0.4428 ± 0.1618 | 0.18 ± 0.21 ms | >5,000 FPS |
-| **Classical U-Net (Baseline Repo)** | 1.93M | 27.17 ± 4.30 dB | 0.7121 ± 0.1472 | 0.2600 ± 0.1100 | ~3.3 ms *(measured on RTX 4050)* | ~300 FPS |
+| **Classical U-Net Baseline** | 1.93M | 27.17 ± 4.30 dB | 0.7121 ± 0.1472 | 0.2600 ± 0.1100 | ~3.3 ms *(measured on RTX 4050)* | ~300 FPS |
 | **NAFNet-SR (Ours)** | **29.33M** | **28.16 ± 5.02 dB** | **0.7661 ± 0.1571** | **0.2277 ± 0.1222** | **39.10 ± 8.41 ms** *(Batch=1)*<br>*(10.97 ms eff. @ Batch=8)* | **25.6 FPS** *(Batch=1)*<br>**91.2 FPS** *(Batch=8)* |
 | **Net Delta vs. Bicubic** | +29.33M | **+5.15 dB** | **+0.2375** | **-48.6%** | High-Quality Restoration | Real-Time GPU |
 
 > **Hardware & Measurement Note:**  
 > - All NAFNet-SR and Bicubic latency numbers were measured programmatically on an **NVIDIA GeForce RTX 3050 Laptop GPU** (Ampere, 4GB VRAM, CUDA 12.6, 2048 CUDA cores).  
-> - The Classical U-Net baseline numbers are cited from the baseline repository (`https://github.com/Arpith173/Semicon-AI-Restoration`), which reported latency on an **NVIDIA GeForce RTX 4050 Laptop GPU** (Ada Lovelace, 6GB VRAM, 2560 CUDA cores). The RTX 3050 is the lower-tier hardware between the two.  
+> - The Classical U-Net baseline benchmark (1.93M parameters) was evaluated on an **NVIDIA GeForce RTX 4050 Laptop GPU** (Ada Lovelace, 6GB VRAM, 2560 CUDA cores). The RTX 3050 is the lower-tier hardware between the two.  
 > - Peak VRAM allocation for NAFNet-SR during inference is **284.0 MB**, enabling execution even on memory-constrained inspection hardware.
 
 ---
