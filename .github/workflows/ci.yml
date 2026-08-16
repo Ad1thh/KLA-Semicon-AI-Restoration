@@ -1,0 +1,50 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-pipeline:
+    name: Model Verification & Inference Contract Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install CPU PyTorch & Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+          pip install -r requirements.txt
+
+      - name: Verify Architecture & Parameters
+        run: |
+          python tools/benchmark_params.py
+
+      - name: Verify Standalone Inference Contract
+        run: |
+          python inference.py --input_dir ./dummy_in --output_dir ./ci_dummy_out
+
+      - name: Validate Output File Dimensions & Constraints
+        run: |
+          python -c "
+          import os, glob, numpy as np
+          out_files = glob.glob('./ci_dummy_out/*.npy')
+          assert len(out_files) >= 2, f'Expected at least 2 outputs, found {len(out_files)}'
+          for f in out_files:
+              arr = np.load(f)
+              assert arr.shape == (256, 256), f'Expected shape (256, 256), got {arr.shape}'
+              assert arr.dtype == np.float32, f'Expected float32, got {arr.dtype}'
+              assert np.all(arr >= 0.0) and np.all(arr <= 1.0), f'Output values out of [0, 1] range: min={arr.min()}, max={arr.max()}'
+          print('✅ All CI automated verification checks passed successfully!')
+          "

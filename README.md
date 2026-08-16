@@ -1,5 +1,7 @@
 # AI-Based Restoration of Degraded Images for Semiconductor Inspection
 
+[![CI Pipeline](https://github.com/Ad1thh/KLA-Semicon-AI-Restoration/actions/workflows/ci.yml/badge.svg)](https://github.com/Ad1thh/KLA-Semicon-AI-Restoration/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/Ad1thh/KLA-Semicon-AI-Restoration?color=blue&label=Release)](https://github.com/Ad1thh/KLA-Semicon-AI-Restoration/releases)
 [![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue.svg)](https://www.python.org/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-ee4c2c.svg)](https://pytorch.org/)
 [![CUDA](https://img.shields.io/badge/CUDA-12.0%2B-76b900.svg)](https://developer.nvidia.com/cuda-zone)
