@@ -63,17 +63,11 @@ GT/
 *.zip
 *.7z
 
-# Model Weights & Large Checkpoints (>100MB exceeds GitHub limits)
-weights/*.pt
-weights/*.pth
+# Model Weights
 weights/*.ckpt
 weights/*.bin
 weights/*.onnx
-*.pt
-*.pth
-*.ckpt
-*.bin
-*.onnx
+!weights/nafnet_sr_best.pt
 !weights/.gitkeep
 !weights/README.md
 
