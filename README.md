@@ -48,14 +48,16 @@ This solution delivers a deep learning restoration pipeline that reconstructs **
 
 Evaluated across all 640 held-out validation pairs ($N=640$ unseen semiconductor wafer patterns) with metrics reported as **mean ± standard deviation**:
 
-| Method / Model | Trainable Parameters | PSNR (dB) ↑ *(mean ± std)* | SSIM ↑ *(mean ± std)* | LPIPS ↓ *(mean ± std)* | Single-Image Latency *(RTX 3050 Laptop)* | Throughput *(FPS)* |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Bicubic Baseline** | 0 *(Param-free)* | 23.01 ± 3.65 dB | 0.5286 ± 0.1950 | 0.4428 ± 0.1618 | 0.18 ± 0.21 ms | >5,000 FPS |
-| **NAFNet-SR (Ours)** | **29.33M** | **28.16 ± 5.02 dB** | **0.7661 ± 0.1571** | **0.2277 ± 0.1222** | **39.10 ± 8.41 ms** *(Batch=1)*<br>*(10.97 ms eff. @ Batch=8)* | **25.6 FPS** *(Batch=1)*<br>**91.2 FPS** *(Batch=8)* |
-| **Net Improvement** | **+29.33M** | **+5.15 dB** | **+0.2375** | **-48.6%** | High-Quality Restoration | Real-Time GPU |
+| Method / Model | Trainable Parameters | PSNR (dB) ↑ *(mean ± std)* | SSIM ↑ *(mean ± std)* | LPIPS ↓ *(mean ± std)* | Single-Image Latency *(Batch=1)* | Single-Image FPS | Batched Latency *(Batch=8)* | Batched FPS |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Bicubic Baseline** | 0 *(Param-free)* | 23.01 ± 3.65 dB | 0.5286 ± 0.1950 | 0.4428 ± 0.1618 | 0.18 ± 0.21 ms | 5,448 FPS | 0.09 ms / img | 11,437 FPS |
+| **NAFNet-SR (Ours)** | **29.33M** | **28.16 ± 5.02 dB** | **0.7661 ± 0.1571** | **0.2277 ± 0.1222** | **39.10 ± 8.41 ms** | **25.6 FPS** | **10.97 ms / img** | **91.2 FPS** |
+| **Net Improvement** | **+29.33M** | **+5.15 dB** | **+0.2375** | **-48.6%** | High-Quality Restoration | Interactive Mode | High-Throughput Scan | Fab Stream |
 
 > **Hardware & Measurement Note:**  
-> - All NAFNet-SR and Bicubic baseline latency numbers were measured programmatically on an **NVIDIA GeForce RTX 3050 Laptop GPU** (Ampere, 4GB VRAM, CUDA 12.6, 2048 CUDA cores).  
+> - All latency and throughput figures were measured programmatically on an **NVIDIA GeForce RTX 3050 Laptop GPU** (Ampere, 4GB VRAM, CUDA 12.6, 2048 CUDA cores).  
+> - Single-Image latency measures individual image arrival ($1\times1\times128\times128 \rightarrow 1\times1\times256\times256$).  
+> - Batched latency measures parallel GPU throughput ($8\times1\times128\times128 \rightarrow 8\times1\times256\times256$) with per-image effective execution time.  
 > - Peak VRAM allocation for NAFNet-SR during inference is **284.0 MB**, enabling execution even on memory-constrained inspection hardware.
 
 ---
