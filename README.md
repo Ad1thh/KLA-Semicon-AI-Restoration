@@ -185,12 +185,6 @@ The inference script strictly adheres to the competition CLI contract accepting 
 python inference.py --input_dir ./dummy_in --output_dir ./results/predictions
 ```
 
-### F. Generate Results & Presentation Deck
-```bash
-python generate_results.py
-python build_presentation.py
-```
-
 ---
 
 ## 8. Compliance & Open-Source Attribution
