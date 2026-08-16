@@ -96,11 +96,11 @@ Semicon_Hackathon/
 ├── inference.py                  # Standalone inference script (--input_dir, --output_dir)
 ├── audit_and_split.py            # Deterministic 80/20 train/val dataset splitter (seed=42)
 ├── generate_results.py           # Visual comparison & benchmark generator
-├── build_presentation.py         # Solution presentation PDF builder (12 slides)
 ├── benchmark_widths.py           # Model capacity & latency benchmarking tool
 ├── test_speed_stability.py       # Speed & numerical stability verification test
 ├── monitor.py                    # Live training progress & GPU monitor
-├── solution_presentation.pdf     # 12-slide comprehensive presentation deck
+├── solution_presentation.pptx    # Complete editable PowerPoint presentation deck
+├── solution_presentation.pdf     # 12-slide comprehensive presentation deck (PDF)
 ├── requirements.txt              # Environment dependencies
 ├── LICENSE                       # MIT License
 └── README.md                     # Complete solution documentation
