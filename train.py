@@ -12,11 +12,11 @@ from src.dataset import SemiconductorDataset, get_dataloaders
 from src.model import NAFNetSR
 from src.loss import CompositeRestorationLoss
 
-def log_to_claude_mem(key: str, data: dict):
-    """Autonomous state logger recording experiment tracking and metrics."""
+def log_experiment_metrics(key: str, data: dict):
+    """Experiment state logger recording experiment tracking and evaluation metrics."""
     log_dir = "./logs"
     os.makedirs(log_dir, exist_ok=True)
-    log_file = os.path.join(log_dir, "claude_mem_state.yaml")
+    log_file = os.path.join(log_dir, "experiment_metrics.yaml")
     
     current_data = {}
     if os.path.exists(log_file):
@@ -29,7 +29,7 @@ def log_to_claude_mem(key: str, data: dict):
     current_data[key] = data
     with open(log_file, "w") as f:
         yaml.dump(current_data, f, default_flow_style=False)
-    print(f"[claude-mem] Successfully recorded '{key}' to {log_file}", flush=True)
+    print(f"[Logger] Successfully recorded '{key}' to {log_file}", flush=True)
 
 def run_bicubic_baseline(val_loader: DataLoader, device: torch.device) -> dict[str, float]:
     """Compute standard Bicubic baseline metrics on validation set."""
@@ -73,7 +73,7 @@ def run_bicubic_baseline(val_loader: DataLoader, device: torch.device) -> dict[s
     print(f"  Total evaluation time: {results['time_seconds']:.2f}s", flush=True)
     print("=" * 60 + "\n", flush=True)
 
-    log_to_claude_mem("bicubic_baseline", results)
+    log_experiment_metrics("bicubic_baseline", results)
     return results
 
 def run_overfit_test(config: dict, device: torch.device):
@@ -140,7 +140,7 @@ def run_overfit_test(config: dict, device: torch.device):
                     print(f"\n>>> Overfit Target Met! PSNR = {avg_psnr:.2f} dB (> 40 dB) at step {step}! <<<", flush=True)
                     break
 
-    log_to_claude_mem("karpathy_overfit_test", {
+    log_experiment_metrics("karpathy_overfit_test", {
         "status": "PASSED" if best_psnr >= 40.0 else "FAILED",
         "final_psnr": float(best_psnr),
         "target_psnr": 40.0,
@@ -309,7 +309,7 @@ def train_full(config: dict, device: torch.device, target_epochs: int = None):
     print(f"--- Best Val SSIM: {best_metrics.get('val_ssim', 0.0):.4f} | Best Val LPIPS: {best_metrics.get('val_lpips', 0.0):.4f} ---", flush=True)
     print("=" * 60 + "\n", flush=True)
 
-    log_to_claude_mem("full_training_results", {
+    log_experiment_metrics("full_training_results", {
         "best_epoch": best_metrics.get("epoch", 0),
         "best_val_psnr": float(best_val_psnr),
         "best_val_ssim": float(best_metrics.get("val_ssim", 0.0)),
