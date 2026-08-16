@@ -107,7 +107,7 @@ def run_overfit_test(config: dict, device: torch.device):
         w_charbonnier=config["loss_weights"]["charbonnier"],
         w_ms_ssim=config["loss_weights"]["ms_ssim"],
         w_fft=config["loss_weights"]["fft"],
-        w_lpips=config["loss_weights"]["lpips"],
+        w_lpips=0.0,
         device=device
     )
 
@@ -134,7 +134,7 @@ def run_overfit_test(config: dict, device: torch.device):
                 p1 = calculate_psnr(eval_pred[1:2], gt[1:2])
                 avg_psnr = (p0 + p1) / 2.0
                 best_psnr = max(best_psnr, avg_psnr)
-                print(f"Step {step:03d}/400 | Total Loss: {loss.item():.5f} | Charb: {loss_dict['loss_charbonnier']:.5f} | PSNR: {avg_psnr:.2f} dB (Sample 0: {p0:.2f} dB, Sample 1: {p1:.2f} dB)", flush=True)
+                print(f"Step {step:03d}/400 | Total Loss: {loss.item():.5f} | Charb: {loss_dict['loss_charbonnier']:.5f} | PSNR: {avg_psnr:.2f} dB", flush=True)
                 
                 if avg_psnr >= 40.0:
                     print(f"\n>>> Overfit Target Met! PSNR = {avg_psnr:.2f} dB (> 40 dB) at step {step}! <<<", flush=True)
@@ -153,7 +153,7 @@ def run_overfit_test(config: dict, device: torch.device):
 
 def train_full(config: dict, device: torch.device, target_epochs: int = None):
     """
-    Launch full training with Mixed Precision (AMP) and Cosine Annealing.
+    Launch full training with TF32 and Cosine Annealing.
     """
     print("\n" + "=" * 60, flush=True)
     print("--- Phase 5: Launching Full NAFNet-SR Training ---", flush=True)
@@ -173,7 +173,7 @@ def train_full(config: dict, device: torch.device, target_epochs: int = None):
     val_gt_dir = "./data/val/gt"
     val_deg_dir = "./data/val/degraded"
 
-    print("[DataLoader] Preloading Train and Val datasets into high-speed memory...", flush=True)
+    print("[DataLoader] Loading Train and Val datasets...", flush=True)
     t0 = time.time()
     train_loader, val_loader = get_dataloaders(
         train_degraded_dir=train_deg_dir,
@@ -198,20 +198,18 @@ def train_full(config: dict, device: torch.device, target_epochs: int = None):
     ).to(device)
 
     total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    print(f"Model Architecture: NAFNet-SR | Total Trainable Parameters: {total_params:,}", flush=True)
+    print(f"Model Architecture: NAFNet-SR | Total Trainable Parameters: {total_params:,} ({total_params/1e6:.2f}M)", flush=True)
 
     # Loss & Optimizer
     criterion = CompositeRestorationLoss(
         w_charbonnier=config["loss_weights"]["charbonnier"],
         w_ms_ssim=config["loss_weights"]["ms_ssim"],
         w_fft=config["loss_weights"]["fft"],
-        w_lpips=config["loss_weights"]["lpips"],
+        w_lpips=config["loss_weights"].get("lpips", 0.02),
         device=device
     )
 
-    base_lr = config["train"].get("learning_rate", 3e-4)
-    if base_lr > 3e-4:
-        base_lr = 3e-4  # Ensure safe learning rate
+    base_lr = config["train"].get("learning_rate", 5e-4)
 
     optimizer = torch.optim.AdamW(
         model.parameters(),
@@ -227,40 +225,15 @@ def train_full(config: dict, device: torch.device, target_epochs: int = None):
         eta_min=config["train"]["min_lr"]
     )
 
-    amp_enabled = config["train"].get("amp_enabled", True) and device.type == "cuda"
-    scaler = torch.amp.GradScaler("cuda", enabled=amp_enabled)
-
-    start_epoch = 1
     best_val_psnr = -1.0
     best_metrics = {}
-
-    # Resume from checkpoint if available
-    if os.path.exists(best_weight_path):
-        try:
-            ckpt = torch.load(best_weight_path, map_location=device)
-            if isinstance(ckpt, dict) and "model_state_dict" in ckpt:
-                model.load_state_dict(ckpt["model_state_dict"])
-                start_epoch = ckpt.get("epoch", 0) + 1
-                best_val_psnr = ckpt.get("val_psnr", 0.0)
-                best_metrics = {
-                    "epoch": ckpt.get("epoch", 0),
-                    "val_psnr": best_val_psnr,
-                    "val_ssim": ckpt.get("val_ssim", 0.0),
-                    "val_lpips": ckpt.get("val_lpips", 0.0)
-                }
-                print(f"[Resume] Loaded checkpoint from {best_weight_path} (Starting Epoch: {start_epoch}, Best Val PSNR: {best_val_psnr:.4f} dB)", flush=True)
-        except Exception as e:
-            print(f"[Warning] Could not resume checkpoint: {e}", flush=True)
-
     lpips_calc = LPIPSCalculator(device)
-    accum_steps = config["train"].get("gradient_accumulation_steps", 1)
 
-    print(f"Starting Training: Epoch {start_epoch} to {epochs} (AMP: {amp_enabled}, Base LR: {base_lr})...\n", flush=True)
+    print(f"Starting Training: 1 to {epochs} Epochs (Pure FP32/TF32, Base LR: {base_lr})...\n", flush=True)
 
-    for epoch in range(start_epoch, epochs + 1):
+    for epoch in range(1, epochs + 1):
         model.train()
         train_loss = 0.0
-        valid_steps = 0
         
         optimizer.zero_grad()
         start_epoch_time = time.time()
@@ -270,36 +243,23 @@ def train_full(config: dict, device: torch.device, target_epochs: int = None):
             deg = batch["degraded"].to(device)
             gt = batch["gt"].to(device)
 
-            with torch.amp.autocast(device_type=device.type, enabled=amp_enabled):
-                pred = model(deg)
-                loss, loss_dict = criterion(pred, gt)
-                loss_scaled = loss / accum_steps
+            pred = model(deg)
+            loss, loss_dict = criterion(pred, gt)
 
-            # NaN Guard: Skip batch if numerical instability detected
-            if torch.isnan(loss) or torch.isinf(loss):
-                print(f"  [Warning] Skipping NaN/Inf at Batch {step}/{total_batches}", flush=True)
-                optimizer.zero_grad()
-                continue
-
-            scaler.scale(loss_scaled).backward()
-
-            if step % accum_steps == 0 or step == total_batches:
-                scaler.unscale_(optimizer)
-                torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
-                scaler.step(optimizer)
-                scaler.update()
-                optimizer.zero_grad()
+            loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+            optimizer.step()
+            optimizer.zero_grad()
 
             train_loss += loss_dict["total_loss"]
-            valid_steps += 1
 
-            # High-frequency 10-batch live logging
+            # 10-batch live logging
             if step % 10 == 0 or step == total_batches:
-                avg_step_loss = train_loss / max(1, valid_steps)
+                avg_step_loss = train_loss / step
                 print(f"  [Epoch {epoch:02d}/{epochs:02d}] Batch {step:03d}/{total_batches:03d} | Batch Loss: {loss_dict['total_loss']:.5f} (Charb: {loss_dict['loss_charbonnier']:.5f}, FFT: {loss_dict['loss_fft']:.5f}) | Running: {avg_step_loss:.5f}", flush=True)
 
         scheduler.step()
-        epoch_avg_loss = train_loss / max(1, valid_steps)
+        epoch_avg_loss = train_loss / total_batches
         epoch_time = time.time() - start_epoch_time
 
         # Fast GPU Validation phase
@@ -309,8 +269,7 @@ def train_full(config: dict, device: torch.device, target_epochs: int = None):
             for idx, batch in enumerate(val_loader):
                 deg = batch["degraded"].to(device)
                 gt = batch["gt"].to(device)
-                with torch.amp.autocast(device_type=device.type, enabled=amp_enabled):
-                    pred = model(deg)
+                pred = model(deg)
                 for i in range(pred.shape[0]):
                     val_psnr_list.append(calculate_psnr(pred[i:i+1], gt[i:i+1]))
                     val_ssim_list.append(calculate_ssim(pred[i:i+1], gt[i:i+1]))

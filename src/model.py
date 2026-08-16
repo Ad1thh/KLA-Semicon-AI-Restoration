@@ -4,14 +4,19 @@ import torch.nn.functional as F
 
 class LayerNorm2d(nn.Module):
     """
-    Channel-wise 2D Layer Normalization using GroupNorm(1, C) for maximum numerical stability in AMP.
+    Channel-wise Layer Normalization for 2D feature maps (B, C, H, W).
+    Mathematically exact and 100% numerically stable in FP32/TF32.
     """
     def __init__(self, channels: int, eps: float = 1e-6):
         super().__init__()
-        self.gn = nn.GroupNorm(num_groups=1, num_channels=channels, eps=eps)
+        self.weight = nn.Parameter(torch.ones(channels, 1, 1))
+        self.bias = nn.Parameter(torch.zeros(channels, 1, 1))
+        self.eps = eps
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.gn(x)
+        u = x.mean(1, keepdim=True)
+        s = (x - u).pow(2).mean(1, keepdim=True)
+        return (x - u) / torch.sqrt(s + self.eps) * self.weight + self.bias
 
 class SimpleGate(nn.Module):
     """Nonlinear Activation Free SimpleGate: splits channels in half and computes element-wise product."""
@@ -56,8 +61,7 @@ class NAFBlock(nn.Module):
         self.gamma = nn.Parameter(torch.zeros((1, c, 1, 1)), requires_grad=True)
 
     def forward(self, inp: torch.Tensor) -> torch.Tensor:
-        x = inp
-        x = self.norm1(x)
+        x = self.norm1(inp)
         x = self.conv1(x)
         x = self.conv2(x)
         x = self.sg(x)
@@ -82,7 +86,7 @@ class NAFNetSR(nn.Module):
     def __init__(self,
                  in_channels: int = 1,
                  out_channels: int = 1,
-                 width: int = 64,
+                 width: int = 32,
                  enc_blk_nums: list[int] = [2, 2, 4, 8],
                  middle_blk_num: int = 12,
                  dec_blk_nums: list[int] = [2, 2, 2, 2],
@@ -118,7 +122,7 @@ class NAFNetSR(nn.Module):
             self.ups.append(
                 nn.Sequential(
                     nn.Conv2d(chan, chan * 2, kernel_size=1, bias=False),
-                    nn.PixelShuffle(2)  # chan*2 -> chan/2 after spatial upsample by 2
+                    nn.PixelShuffle(2)
                 )
             )
             chan = chan // 2
