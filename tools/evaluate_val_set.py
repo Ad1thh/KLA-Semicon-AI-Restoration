@@ -1,4 +1,7 @@
 import os
+import sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 import glob
 import json
 import time
@@ -14,18 +17,24 @@ def evaluate_validation_set(
     weights_path: str = "./weights/nafnet_sr_best.pt",
     output_json: str = "./results/validation_evaluation_metrics.json"
 ):
+    if not os.path.exists(val_deg_dir):
+        val_deg_dir = os.path.join(os.path.dirname(__file__), "..", "data", "val", "degraded")
+    if not os.path.exists(val_gt_dir):
+        val_gt_dir = os.path.join(os.path.dirname(__file__), "..", "data", "val", "gt")
+    if not os.path.exists(weights_path):
+        weights_path = os.path.join(os.path.dirname(__file__), "..", "weights", "nafnet_sr_best.pt")
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     gpu_name = torch.cuda.get_device_name(0) if device.type == "cuda" else "CPU"
 
     print("=" * 75, flush=True)
-    print("Full Validation Set Evaluation (Mean ± Standard Deviation)", flush=True)
+    print("Full Validation Set Evaluation (Mean +/- Standard Deviation)", flush=True)
     print("=" * 75, flush=True)
     print(f"Device               : {device} ({gpu_name})", flush=True)
     print(f"Degraded Input Dir   : {val_deg_dir}", flush=True)
     print(f"Ground Truth Dir     : {val_gt_dir}", flush=True)
     print(f"Model Checkpoint     : {weights_path}", flush=True)
 
-    # Initialize model
     model = NAFNetSR(
         in_channels=1,
         out_channels=1,

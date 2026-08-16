@@ -1,4 +1,7 @@
 import os
+import sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 import glob
 import json
 import numpy as np
@@ -16,6 +19,15 @@ def generate_visual_triplets(
     output_dir: str = "./results",
     num_samples: int = 6
 ):
+    if not os.path.exists(val_deg_dir):
+        val_deg_dir = os.path.join(os.path.dirname(__file__), "..", "data", "val", "degraded")
+    if not os.path.exists(val_gt_dir):
+        val_gt_dir = os.path.join(os.path.dirname(__file__), "..", "data", "val", "gt")
+    if not os.path.exists(weights_path):
+        weights_path = os.path.join(os.path.dirname(__file__), "..", "weights", "nafnet_sr_best.pt")
+    if not os.path.isabs(output_dir):
+        output_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", output_dir))
+
     os.makedirs(output_dir, exist_ok=True)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -84,7 +96,6 @@ def generate_visual_triplets(
             restored_tensor = model(deg_tensor)
             restored_tensor = torch.clamp(restored_tensor, 0.0, 1.0)
 
-        # Calculate metrics
         bic_psnr = calculate_psnr(bicubic_tensor, gt_tensor)
         bic_ssim = calculate_ssim(bicubic_tensor, gt_tensor)
         bic_lpips = lpips_calc(bicubic_tensor, gt_tensor)
@@ -98,7 +109,6 @@ def generate_visual_triplets(
         rest_disp = restored_tensor.squeeze().cpu().numpy()
         gt_disp = gt_np
 
-        # Create 4-panel comparison figure (Degraded, Bicubic, NAFNet-SR, Ground Truth)
         fig, axes = plt.subplots(1, 4, figsize=(18, 5))
         
         axes[0].imshow(deg_disp, cmap="gray", vmin=0, vmax=1)

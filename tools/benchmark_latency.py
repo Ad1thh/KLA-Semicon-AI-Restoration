@@ -1,9 +1,16 @@
+import os
+import sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 import time
 import numpy as np
 import torch
 from src.model import NAFNetSR
 
 def benchmark_inference_latency(weights_path: str = "weights/nafnet_sr_best.pt"):
+    if not os.path.exists(weights_path):
+        weights_path = os.path.join(os.path.dirname(__file__), "..", "weights", "nafnet_sr_best.pt")
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     gpu_name = torch.cuda.get_device_name(0) if device.type == "cuda" else "CPU"
     
@@ -18,7 +25,6 @@ def benchmark_inference_latency(weights_path: str = "weights/nafnet_sr_best.pt")
         print(f"CUDA Version (Torch) : {torch.version.cuda}", flush=True)
     print("-" * 70, flush=True)
 
-    # Initialize model
     model = NAFNetSR(
         in_channels=1,
         out_channels=1,
@@ -29,8 +35,6 @@ def benchmark_inference_latency(weights_path: str = "weights/nafnet_sr_best.pt")
         scale_factor=2
     ).to(device)
 
-    # Load weights if available
-    import os
     if os.path.exists(weights_path):
         checkpoint = torch.load(weights_path, map_location=device)
         if isinstance(checkpoint, dict) and "model_state_dict" in checkpoint:
@@ -41,17 +45,15 @@ def benchmark_inference_latency(weights_path: str = "weights/nafnet_sr_best.pt")
 
     model.eval()
 
-    # --- 1. Single Image Latency (Batch Size = 1) ---
+    # 1. Single Image Latency (Batch Size = 1)
     x_single = torch.randn(1, 1, 128, 128, device=device)
     
-    # Warmup
     with torch.no_grad():
         for _ in range(25):
             _ = model(x_single)
             if device.type == "cuda":
                 torch.cuda.synchronize()
 
-    # Timed runs
     single_latencies = []
     num_single_runs = 100
     with torch.no_grad():
@@ -63,7 +65,7 @@ def benchmark_inference_latency(weights_path: str = "weights/nafnet_sr_best.pt")
             if device.type == "cuda":
                 torch.cuda.synchronize()
             t1 = time.perf_counter()
-            single_latencies.append((t1 - t0) * 1000.0)  # to ms
+            single_latencies.append((t1 - t0) * 1000.0)
 
     single_lat_mean = float(np.mean(single_latencies))
     single_lat_std = float(np.std(single_latencies))
@@ -73,17 +75,15 @@ def benchmark_inference_latency(weights_path: str = "weights/nafnet_sr_best.pt")
     print(f"  Latency (mean ± std): {single_lat_mean:.2f} ± {single_lat_std:.2f} ms", flush=True)
     print(f"  Throughput (FPS)    : {single_fps:.1f} FPS", flush=True)
 
-    # --- 2. Batched Inference (Batch Size = 8) ---
+    # 2. Batched Inference (Batch Size = 8)
     x_batch = torch.randn(8, 1, 128, 128, device=device)
     
-    # Warmup
     with torch.no_grad():
         for _ in range(15):
             _ = model(x_batch)
             if device.type == "cuda":
                 torch.cuda.synchronize()
 
-    # Timed runs
     batch_latencies = []
     num_batch_runs = 50
     with torch.no_grad():
@@ -95,7 +95,7 @@ def benchmark_inference_latency(weights_path: str = "weights/nafnet_sr_best.pt")
             if device.type == "cuda":
                 torch.cuda.synchronize()
             t1 = time.perf_counter()
-            batch_latencies.append((t1 - t0) * 1000.0)  # to ms
+            batch_latencies.append((t1 - t0) * 1000.0)
 
     batch_lat_mean = float(np.mean(batch_latencies))
     batch_lat_std = float(np.std(batch_latencies))
@@ -113,16 +113,6 @@ def benchmark_inference_latency(weights_path: str = "weights/nafnet_sr_best.pt")
         print(f"  Peak VRAM Allocated        : {peak_vram_mb:.1f} MB", flush=True)
 
     print("=" * 70, flush=True)
-
-    return {
-        "gpu_name": gpu_name,
-        "single_lat_mean_ms": single_lat_mean,
-        "single_lat_std_ms": single_lat_std,
-        "single_fps": single_fps,
-        "batch_lat_mean_ms": batch_lat_mean,
-        "batch_lat_std_ms": batch_lat_std,
-        "batch_fps": batch_fps
-    }
 
 if __name__ == "__main__":
     benchmark_inference_latency()

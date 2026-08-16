@@ -1,3 +1,7 @@
+import os
+import sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 import time
 import torch
 from src.model import NAFNetSR
@@ -25,7 +29,6 @@ def benchmark_all_widths():
         x = torch.randn(8, 1, 128, 128, device=device)
         gt = torch.rand(8, 1, 256, 256, device=device)
 
-        # Warmup
         for _ in range(3):
             optimizer.zero_grad()
             out = model(x)

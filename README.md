@@ -90,6 +90,17 @@ KLA-Semicon-AI-Restoration/
 │   ├── degradations.py           # Multi-order synthetic degradation generator
 │   ├── loss.py                   # Composite loss (Charbonnier + SSIM + FFT + LPIPS)
 │   └── utils.py                  # PSNR, SSIM, LPIPS metrics & seeding utilities
+├── tools/                        # Benchmarking, evaluation & utility tools
+│   ├── __init__.py
+│   ├── benchmark_params.py       # Parameter count verification script
+│   ├── benchmark_latency.py      # GPU-labeled latency & throughput benchmark
+│   ├── evaluate_val_set.py       # Validation set evaluation (mean ± std) (N=640)
+│   ├── generate_results.py       # Visual benchmark quadruplets generator
+│   ├── build_presentation.py     # Presentation deck builder (.pptx & .pdf)
+│   ├── audit_and_split.py        # 80/20 train/val dataset splitter
+│   ├── export_weights.py         # Model weight compact exporter
+│   ├── benchmark_widths.py       # Channel width scaling analysis
+│   └── test_speed_stability.py   # Training speed & numerical stability test
 ├── weights/
 │   ├── nafnet_sr_best.pt         # Trained model weights (56.15 MB, tracked directly in Git)
 │   └── README.md                 # Checkpoint metadata and usage instructions
@@ -100,13 +111,8 @@ KLA-Semicon-AI-Restoration/
 │   ├── visual_triplets_summary.json
 │   └── validation_evaluation_metrics.json
 ├── dummy_in/                     # Sample input files for quick testing
-├── train.py                      # Training & validation script (Baseline, Overfit, Full)
+├── train.py                      # Core training & validation script (Baseline, Overfit, Full)
 ├── inference.py                  # Standalone inference script (--input_dir, --output_dir)
-├── evaluate_val_set.py           # Evaluation script computing mean ± std metrics (N=640)
-├── benchmark_params.py           # Parameter count verification script
-├── benchmark_latency.py          # GPU-labeled latency and throughput benchmark script
-├── benchmark_widths.py           # Model capacity scaling analysis tool
-├── test_speed_stability.py       # Speed & numerical stability verification test
 ├── monitor.py                    # Real-time console training progress monitor
 ├── solution_presentation.pptx    # Complete 12-slide editable PowerPoint presentation deck
 ├── solution_presentation.pdf     # 12-slide presentation deck (PDF)
@@ -174,19 +180,19 @@ pip install -r requirements.txt
 ### A. Parameter Count Verification
 Prints total and trainable parameter counts directly from the model definition:
 ```bash
-python benchmark_params.py
+python tools/benchmark_params.py
 ```
 
 ### B. GPU Latency & Throughput Benchmark
 Measures single-image and batched inference latency programmatically querying the local GPU:
 ```bash
-python benchmark_latency.py
+python tools/benchmark_latency.py
 ```
 
 ### C. Validation Set Evaluation (Mean ± Std)
 Evaluates Bicubic baseline and NAFNet-SR across all 640 validation images:
 ```bash
-python evaluate_val_set.py
+python tools/evaluate_val_set.py
 ```
 
 ### D. Standalone Inference Evaluation (Strict Evaluator Contract)

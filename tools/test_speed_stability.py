@@ -1,3 +1,7 @@
+import os
+import sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 import time
 import torch
 from src.model import NAFNetSR
@@ -26,7 +30,6 @@ def test_speed_and_stability():
     x = torch.randn(8, 1, 128, 128, device=device)
     gt = torch.rand(8, 1, 256, 256, device=device)
 
-    # Warmup
     for _ in range(5):
         optimizer.zero_grad()
         out = model(x)
@@ -34,7 +37,6 @@ def test_speed_and_stability():
         loss.backward()
         optimizer.step()
 
-    # Benchmark 30 training steps
     if device.type == 'cuda':
         torch.cuda.synchronize()
     t0 = time.time()

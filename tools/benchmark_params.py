@@ -1,8 +1,15 @@
+import os
+import sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 import yaml
 import torch
 from src.model import NAFNetSR
 
 def print_parameter_count(config_path: str = "configs/config.yaml"):
+    if not os.path.exists(config_path):
+        config_path = os.path.join(os.path.dirname(__file__), "..", "configs", "config.yaml")
+
     with open(config_path, "r") as f:
         config = yaml.safe_load(f)
 
