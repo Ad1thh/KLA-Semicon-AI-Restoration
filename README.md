@@ -112,7 +112,6 @@ KLA-Semicon-AI-Restoration/
 ├── dummy_in/                     # Sample input files for quick testing
 ├── train.py                      # Core training & validation script (Baseline, Overfit, Full)
 ├── inference.py                  # Standalone inference script (--input_dir, --output_dir)
-├── monitor.py                    # Real-time console training progress monitor
 ├── requirements.txt              # Environment dependencies
 ├── LICENSE                       # MIT License
 └── README.md                     # Complete solution documentation
