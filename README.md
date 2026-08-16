@@ -44,7 +44,7 @@ This solution delivers a deep learning restoration pipeline that reconstructs **
 - **Activation-Free Architecture:** NAFNet-SR replaces standard non-linear activation functions (GELU/ReLU) with parameter-free `SimpleGate` and `Simplified Channel Attention (SCA)`.
 - **Multi-Domain Composite Loss:** Multi-domain objective combining Charbonnier spatial loss, Single-Scale SSIM structural loss, 2D Fast Fourier Transform (FFT) frequency loss, and LPIPS perceptual loss.
 
-> **Engineering Trade-off:** NAFNet-SR deliberately scales to **29.33M parameters** across 36 deep blocks, trading model capacity and per-patch latency against lighter baselines to achieve critical sub-micron structural restoration (**+5.15 dB PSNR / +0.2375 SSIM** gain over bicubic). This capacity is strictly necessary to resolve fine 1-pixel pitch lines and contact vias that shallow networks blur. In production fab lines, high throughput is sustained via batched parallel inference (**91.2 FPS @ Batch=8**).
+> **Engineering Trade-off:** NAFNet-SR deliberately scales to **29.33M parameters** across 36 deep blocks, trading model capacity and per-patch latency against lighter baselines to achieve critical sub-pixel and fine line structural restoration (**+5.15 dB PSNR / +0.2375 SSIM** gain over bicubic). This capacity is strictly necessary to resolve fine 1-pixel pitch lines and contact vias that shallow networks blur. In production fab lines, high throughput is sustained via batched parallel inference (**91.2 FPS @ Batch=8**).
 
 ---
 
@@ -60,7 +60,7 @@ Evaluated across all 640 held-out validation pairs ($N=640$ unseen semiconductor
 
 > **Hardware & Measurement Note:**  
 > - All latency and throughput figures were measured programmatically on an **NVIDIA GeForce RTX 3050 Laptop GPU** (Ampere, 4GB VRAM, CUDA 12.6, 2048 CUDA cores).  
-> - **Production Scan Throughput (`Batch=8`):** Represents the realistic continuous inspection line deployment mode where camera sensors stream batches of image patches, achieving **91.2 FPS (10.97 ms / image)**.  
+> - **Production Scan Throughput (`Batch=8`):** Represents continuous inspection line deployment where sensors partition line-scans into an 8-tile pipeline buffer. A batch size of 8 fully saturates GPU CUDA cores while keeping peak VRAM to **284.0 MB** (< 10% of a 4GB VRAM budget), avoiding memory contention with real-time camera frame grabber buffers.  
 > - **Single-Patch Review (`Batch=1`):** Represents offline / interactive single-defect review executing in **39.10 ms (25.6 FPS)**.  
 > - Peak VRAM allocation for NAFNet-SR during inference is **284.0 MB**, enabling execution even on memory-constrained inspection hardware.
 
