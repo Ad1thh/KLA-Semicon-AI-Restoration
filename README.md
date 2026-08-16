@@ -44,7 +44,7 @@ This solution delivers a deep learning restoration pipeline that reconstructs **
 - **Activation-Free Architecture:** NAFNet-SR replaces standard non-linear activation functions (GELU/ReLU) with parameter-free `SimpleGate` and `Simplified Channel Attention (SCA)`.
 - **Multi-Domain Composite Loss:** Multi-domain objective combining Charbonnier spatial loss, Single-Scale SSIM structural loss, 2D Fast Fourier Transform (FFT) frequency loss, and LPIPS perceptual loss.
 
-> **Engineering Trade-off:** NAFNet-SR deliberately scales to **29.33M parameters** across 36 deep blocks, trading model capacity and per-patch latency against lighter baselines to achieve critical sub-pixel and fine line structural restoration (**+5.15 dB PSNR / +0.2375 SSIM** gain over bicubic). This capacity is strictly necessary to resolve fine 1-pixel pitch lines and contact vias that shallow networks blur. In production fab lines, high throughput is sustained via batched parallel inference (**91.2 FPS @ Batch=8**).
+> **Engineering Trade-off:** NAFNet-SR deliberately scales to **29.33M parameters** with **75.7% of its capacity (22.2M params) concentrated in a 12-block, 512-channel latent bottleneck**. This architectural investment trades per-patch compute against lightweight baselines to achieve critical sub-pixel and fine line structural restoration (**+5.15 dB PSNR / +0.2375 SSIM** gain over the underlying bicubic base). This capacity is strictly necessary to resolve fine 1-pixel pitch lines and contact vias that shallow networks blur. In production fab lines, high throughput is sustained via batched parallel inference (**91.2 FPS @ Batch=8**).
 
 ---
 
@@ -137,14 +137,16 @@ Because it is under GitHub's 100 MB file limit, it is **tracked directly in this
 | **Trainable Parameters** | **29,333,988** (100%) | All parameters fully optimized during training |
 | **Base Channel Width ($C$)** | **32** | Initial convolutional feature projection dimension |
 | **Encoder Stage Blocks** | `[2, 2, 4, 8]` | 4 downsampling stages (channels: 32 → 64 → 128 → 256) |
-| **Middle Bottleneck Blocks** | **12** | Deep feature refinement blocks at lowest spatial resolution |
+| **Middle Bottleneck Blocks** | **12** (512 channels) | **75.7% of total capacity (22.2M params)** concentrated in deep latent bottleneck |
 | **Decoder Stage Blocks** | `[2, 2, 2, 2]` | 4 upsampling stages with skip-connection feature fusion |
 | **Total NAF Blocks** | **36 Blocks** | 16 encoder + 12 middle + 8 decoder blocks |
+| **Global Residual Base** | **Bicubic ($2\times$)** | Additive residual formulation: $\hat{Y} = \text{clamp}(\text{Bicubic}(X) + R_\theta(X), 0.0, 1.0)$ |
 | **Super-Resolution Upsampler** | **PixelShuffle(2)** | Sub-pixel convolution ($128\times 128 \rightarrow 256\times 256$) |
 | **Input / Output Format** | Single-Channel ($1\times H \times W$) | Float32 grayscale representation (unclipped inputs) |
 | **Output Dynamic Range** | `[0.0, 1.0]` | Enforced range constraint via `torch.clamp(x, 0.0, 1.0)` |
 | **Inference VRAM Footprint** | **284.0 MB** | Measured peak GPU memory allocation |
 
+- **Additive Bicubic Residual Formulation:** The network learns an additive residual $R_\theta(X)$ anchored to the identical analytical bicubic baseline, meaning the **+5.15 dB PSNR gain** directly measures the isolated empirical value added by the deep residual representation.
 - **Nonlinear Activation Free Block:** Replaces standard non-linear activations (GELU/ReLU) with a parameter-free `SimpleGate`:
   $$\text{SimpleGate}(X) = X_1 \odot X_2, \quad \text{where } [X_1, X_2] = \text{chunk}(X, \text{dim}=1)$$
 - **Simplified Channel Attention (SCA):**
