@@ -126,7 +126,22 @@ Because it is under GitHub's 100 MB file limit, it is **tracked directly in this
 
 ## 5. Architecture & Loss Formulation
 
-### NAFNet-SR Architecture
+### NAFNet-SR Architecture & Parameter Breakdown
+
+| Hyperparameter / Parameter Dimension | Value | Description |
+| :--- | :---: | :--- |
+| **Total Parameters** | **29,333,988** (29.33M) | Calculated via `sum(p.numel() for p in model.parameters())` |
+| **Trainable Parameters** | **29,333,988** (100%) | All parameters fully optimized during training |
+| **Base Channel Width ($C$)** | **32** | Initial convolutional feature projection dimension |
+| **Encoder Stage Blocks** | `[2, 2, 4, 8]` | 4 downsampling stages (channels: 32 → 64 → 128 → 256) |
+| **Middle Bottleneck Blocks** | **12** | Deep feature refinement blocks at lowest spatial resolution |
+| **Decoder Stage Blocks** | `[2, 2, 2, 2]` | 4 upsampling stages with skip-connection feature fusion |
+| **Total NAF Blocks** | **36 Blocks** | 16 encoder + 12 middle + 8 decoder blocks |
+| **Super-Resolution Upsampler** | **PixelShuffle(2)** | Sub-pixel convolution ($128\times 128 \rightarrow 256\times 256$) |
+| **Input / Output Format** | Single-Channel ($1\times H \times W$) | Float32 grayscale representation (unclipped inputs) |
+| **Output Dynamic Range** | `[0.0, 1.0]` | Enforced range constraint via `torch.clamp(x, 0.0, 1.0)` |
+| **Inference VRAM Footprint** | **284.0 MB** | Measured peak GPU memory allocation |
+
 - **Nonlinear Activation Free Block:** Replaces standard non-linear activations (GELU/ReLU) with a parameter-free `SimpleGate`:
   $$\text{SimpleGate}(X) = X_1 \odot X_2, \quad \text{where } [X_1, X_2] = \text{chunk}(X, \text{dim}=1)$$
 - **Simplified Channel Attention (SCA):**
