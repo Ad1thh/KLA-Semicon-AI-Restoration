@@ -16,24 +16,37 @@ def parse_args():
 
 def load_model(weights_path: str = "./weights/nafnet_sr_best.pt", device: torch.device = torch.device("cpu")) -> torch.nn.Module:
     """Initialize NAFNet-SR model and load trained weights."""
-    model = NAFNetSR(
-        in_channels=1,
-        out_channels=1,
-        width=64,
-        enc_blk_nums=[2, 2, 4, 8],
-        middle_blk_num=12,
-        dec_blk_nums=[2, 2, 2, 2],
-        scale_factor=2
-    ).to(device)
-
+    width = 32
     if os.path.exists(weights_path):
         checkpoint = torch.load(weights_path, map_location=device)
+        if isinstance(checkpoint, dict) and "config" in checkpoint and "model" in checkpoint["config"]:
+            width = checkpoint["config"]["model"].get("width", 32)
+        
+        model = NAFNetSR(
+            in_channels=1,
+            out_channels=1,
+            width=width,
+            enc_blk_nums=[2, 2, 4, 8],
+            middle_blk_num=12,
+            dec_blk_nums=[2, 2, 2, 2],
+            scale_factor=2
+        ).to(device)
+
         if isinstance(checkpoint, dict) and "model_state_dict" in checkpoint:
             model.load_state_dict(checkpoint["model_state_dict"])
         elif isinstance(checkpoint, dict):
             model.load_state_dict(checkpoint)
-        print(f"[Inference] Loaded model weights from {weights_path}")
+        print(f"[Inference] Loaded model weights from {weights_path} (width={width})")
     else:
+        model = NAFNetSR(
+            in_channels=1,
+            out_channels=1,
+            width=width,
+            enc_blk_nums=[2, 2, 4, 8],
+            middle_blk_num=12,
+            dec_blk_nums=[2, 2, 2, 2],
+            scale_factor=2
+        ).to(device)
         print(f"[Inference Warning] Weights file {weights_path} not found. Running with default initialization.")
 
     model.eval()

@@ -50,9 +50,10 @@ Evaluated on the official 80/20 validation split ($N=80$ unseen semiconductor wa
 
 | Method / Model | PSNR (dB) ↑ | SSIM ↑ | LPIPS ↓ | Inference Latency (GPU) | Throughput |
 | :--- | :---: | :---: | :---: | :---: | :---: |
-| **Bicubic Baseline** | **26.85 dB** | **0.7412** | **0.2384** | ~1.2 ms | >800 FPS |
-| **NAFNet-SR (Ours)** | **34.20 dB** | **0.9385** | **0.0612** | **~7.8 ms** | **>128 FPS** |
-| **Net Improvement** | **+7.35 dB** | **+0.1973** | **-74.3%** | **Real-Time** | **Production Ready** |
+| **Bicubic Baseline** | **23.01 dB** | **0.5286** | **0.4428** | ~1.2 ms | >800 FPS |
+| **Classical U-Net (Friend's Baseline)** | **27.17 dB** | **0.7121** | **0.2600** | ~3.3 ms | >300 FPS |
+| **NAFNet-SR (Ours)** | **28.16 dB** | **0.7661** | **0.2298** | **~2.8 ms** | **>350 FPS** |
+| **Net Improvement vs. Bicubic** | **+5.15 dB** | **+0.2375** | **-48.1%** | **Real-Time** | **Production Ready** |
 
 ---
 

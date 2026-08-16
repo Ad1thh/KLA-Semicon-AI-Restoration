@@ -84,3 +84,4 @@ runs/
 .pytest_cache/
 wandb/
 scratch/
+dummy_out/

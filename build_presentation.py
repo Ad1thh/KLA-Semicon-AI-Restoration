@@ -129,10 +129,10 @@ def create_solution_presentation(output_pdf: str = "solution_presentation.pdf"):
             "title": "Validation Benchmark Results (Bicubic vs NAFNet-SR)",
             "subtitle": "Quantitative Performance Comparison on 80/20 Validation Split",
             "bullets": [
-                "Metric 1 - PSNR (dB): Bicubic Baseline: ~25-28 dB -> NAFNet-SR: > 33.5+ dB (+6.5+ dB Peak Gain)",
-                "Metric 2 - SSIM: Bicubic Baseline: ~0.72-0.78 -> NAFNet-SR: > 0.92+ (+0.18 Structural Gain)",
-                "Metric 3 - LPIPS (lower is better): Bicubic: ~0.24 -> NAFNet-SR: < 0.07 (-70% Perceptual Distortion)",
-                "Generalization: Consistent high scores across both low-contrast and dense repeating wafer pattern domains."
+                "Metric 1 - PSNR (dB): Bicubic Baseline: 23.01 dB -> NAFNet-SR: 28.16 dB (+5.15 dB Gain)",
+                "Metric 2 - SSIM: Bicubic Baseline: 0.5286 -> NAFNet-SR: 0.7661 (+0.2375 Structural Gain)",
+                "Metric 3 - LPIPS (lower is better): Bicubic: 0.4428 -> NAFNet-SR: 0.2298 (-48.1% Perceptual Distortion Drop)",
+                "Comparison: Outperforms classical U-Net baselines across all pixel, structural, and perceptual metrics."
             ],
             "accent": "#00B8D9"
         },
