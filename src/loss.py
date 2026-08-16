@@ -95,18 +95,19 @@ class LPIPSLoss(nn.Module):
 
 class CompositeRestorationLoss(nn.Module):
     """
-    Composite Loss specified in AGENT_RULES.md:
+    Multi-Domain Composite Loss:
     L_total = 1.0 * L_Charbonnier + 0.5 * L_SSIM + 0.1 * L_FFT + 0.02 * L_LPIPS
     """
     def __init__(self,
                  w_charbonnier: float = 1.0,
-                 w_ms_ssim: float = 0.5,
+                 w_ssim: float = 0.5,
                  w_fft: float = 0.1,
                  w_lpips: float = 0.02,
+                 w_ms_ssim: float = None,
                  device: torch.device = torch.device('cpu')):
         super().__init__()
         self.w_charbonnier = w_charbonnier
-        self.w_ms_ssim = w_ms_ssim
+        self.w_ssim = w_ms_ssim if w_ms_ssim is not None else w_ssim
         self.w_fft = w_fft
         self.w_lpips = w_lpips
 
@@ -129,7 +130,7 @@ class CompositeRestorationLoss(nn.Module):
 
         total_loss = (
             self.w_charbonnier * l_char +
-            self.w_ms_ssim * l_ssim +
+            self.w_ssim * l_ssim +
             self.w_fft * l_fft +
             self.w_lpips * l_lpips
         )
@@ -137,6 +138,7 @@ class CompositeRestorationLoss(nn.Module):
         loss_dict = {
             "total_loss": total_loss.item(),
             "loss_charbonnier": l_char.item(),
+            "loss_ssim": l_ssim.item(),
             "loss_ms_ssim": l_ssim.item(),
             "loss_fft": l_fft.item(),
             "loss_lpips": l_lpips.item(),

@@ -105,7 +105,7 @@ def run_overfit_test(config: dict, device: torch.device):
 
     criterion = CompositeRestorationLoss(
         w_charbonnier=config["loss_weights"]["charbonnier"],
-        w_ms_ssim=config["loss_weights"]["ms_ssim"],
+        w_ssim=config["loss_weights"].get("ssim", config["loss_weights"].get("ms_ssim", 0.5)),
         w_fft=config["loss_weights"]["fft"],
         w_lpips=0.0,
         device=device
@@ -203,7 +203,7 @@ def train_full(config: dict, device: torch.device, target_epochs: int = None):
     # Loss & Optimizer
     criterion = CompositeRestorationLoss(
         w_charbonnier=config["loss_weights"]["charbonnier"],
-        w_ms_ssim=config["loss_weights"]["ms_ssim"],
+        w_ssim=config["loss_weights"].get("ssim", config["loss_weights"].get("ms_ssim", 0.5)),
         w_fft=config["loss_weights"]["fft"],
         w_lpips=config["loss_weights"].get("lpips", 0.02),
         device=device
