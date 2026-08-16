@@ -13,9 +13,9 @@
 
 ## 1. Executive Summary & Problem Formulation
 
-In high-throughput semiconductor wafer inspection (optical and electron beam / SEM), captured images suffer from photon noise, multiplicative speckle noise, sensor thermal noise, and optical diffraction resolution limits.
+In semiconductor wafer inspection (optical and electron beam / SEM), captured images suffer from photon noise, multiplicative speckle noise, sensor thermal noise, and optical diffraction resolution limits.
 
-This solution delivers a robust, real-time deep learning restoration pipeline that reconstructs **$128 \times 128$ noisy, low-resolution grayscale observations (`NoisyLR`)** back to **$256 \times 256$ pristine ground-truth structures (`GT`)**.
+This solution delivers a deep learning restoration pipeline that reconstructs **$128 \times 128$ noisy, low-resolution grayscale observations (`NoisyLR`)** back to **$256 \times 256$ ground-truth structures (`GT`)**.
 
 ```
 [ Degraded Input (128x128 Float32) ] 
@@ -34,26 +34,31 @@ This solution delivers a robust, real-time deep learning restoration pipeline th
 [ Restored Wafer Image (256x256 Float32, [0, 1]) ]
 ```
 
-### Key Technical Innovations & Domain Invariants
+### Domain Invariants & Technical Properties
 - **Domain Invariants Enforced:**
   1. **Raw Float32 Representation:** Single-channel grayscale inputs and outputs.
-  2. **Unclipped Input Handling:** Multiplicative speckle and Gaussian noise push raw input values outside `[0.0, 1.0]`. Inputs are **strictly unclipped** at the dataloader level to preserve true noise physics.
+  2. **Unclipped Input Handling:** Multiplicative speckle and Gaussian noise push raw input values outside `[0.0, 1.0]`. Inputs are **strictly unclipped** at the dataloader level to preserve physical sensor noise dynamics.
   3. **Output Range Constraint:** Model output predictions are strictly clamped via `torch.clamp(x, 0.0, 1.0)`.
-- **High-Throughput Architecture:** NAFNet-SR eliminates non-linear activation bottlenecks (GELU/ReLU) in favor of parameter-free `SimpleGate` and `Simplified Channel Attention (SCA)`, maximizing GPU arithmetic intensity.
-- **Physics-Informed Composite Loss:** Multi-domain objective combining Charbonnier spatial loss, Multi-Scale SSIM (MS-SSIM), 2D Fast Fourier Transform (FFT) frequency loss, and LPIPS perceptual loss.
+- **Activation-Free Architecture:** NAFNet-SR replaces standard non-linear activation functions (GELU/ReLU) with parameter-free `SimpleGate` and `Simplified Channel Attention (SCA)`.
+- **Multi-Domain Composite Loss:** Multi-domain objective combining Charbonnier spatial loss, SSIM structural loss, 2D Fast Fourier Transform (FFT) frequency loss, and LPIPS perceptual loss.
 
 ---
 
 ## 2. Quantitative Benchmark Results
 
-Evaluated on the official 80/20 validation split ($N=80$ unseen semiconductor wafer patterns):
+Evaluated across all 640 held-out validation pairs ($N=640$ unseen semiconductor wafer patterns) with metrics reported as **mean ± standard deviation**:
 
-| Method / Model | PSNR (dB) ↑ | SSIM ↑ | LPIPS ↓ | Inference Latency (GPU) | Throughput |
-| :--- | :---: | :---: | :---: | :---: | :---: |
-| **Bicubic Baseline** | **23.01 dB** | **0.5286** | **0.4428** | ~1.2 ms | >800 FPS |
-| **Classical U-Net (Friend's Baseline)** | **27.17 dB** | **0.7121** | **0.2600** | ~3.3 ms | >300 FPS |
-| **NAFNet-SR (Ours)** | **28.16 dB** | **0.7661** | **0.2298** | **~2.8 ms** | **>350 FPS** |
-| **Net Improvement vs. Bicubic** | **+5.15 dB** | **+0.2375** | **-48.1%** | **Real-Time** | **Production Ready** |
+| Method / Model | Trainable Parameters | PSNR (dB) ↑ *(mean ± std)* | SSIM ↑ *(mean ± std)* | LPIPS ↓ *(mean ± std)* | Single-Image Latency *(RTX 3050 Laptop)* | Throughput *(FPS)* |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Bicubic Baseline** | — | 23.01 ± 3.65 dB | 0.5286 ± 0.1950 | 0.4428 ± 0.1618 | 0.18 ± 0.21 ms | >5,000 FPS |
+| **Classical U-Net (Baseline Repo)** | 1.93M | 27.17 ± 4.30 dB | 0.7121 ± 0.1472 | 0.2600 ± 0.1100 | ~3.3 ms *(measured on RTX 4050)* | ~300 FPS |
+| **NAFNet-SR (Ours)** | **29.33M** | **28.16 ± 5.02 dB** | **0.7661 ± 0.1571** | **0.2277 ± 0.1222** | **39.10 ± 8.41 ms** *(Batch=1)*<br>*(10.97 ms eff. @ Batch=8)* | **25.6 FPS** *(Batch=1)*<br>**91.2 FPS** *(Batch=8)* |
+| **Net Delta vs. Bicubic** | +29.33M | **+5.15 dB** | **+0.2375** | **-48.6%** | High-Quality Restoration | Real-Time GPU |
+
+> **Hardware & Measurement Note:**  
+> - All NAFNet-SR and Bicubic latency numbers were measured programmatically on an **NVIDIA GeForce RTX 3050 Laptop GPU** (Ampere, 4GB VRAM, CUDA 12.6, 2048 CUDA cores).  
+> - The Classical U-Net baseline numbers are cited from the baseline repository (`https://github.com/Arpith173/Semicon-AI-Restoration`), which reported latency on an **NVIDIA GeForce RTX 4050 Laptop GPU** (Ada Lovelace, 6GB VRAM, 2560 CUDA cores). The RTX 3050 is the lower-tier hardware between the two.  
+> - Peak VRAM allocation for NAFNet-SR during inference is **284.0 MB**, enabling execution even on memory-constrained inspection hardware.
 
 ---
 
@@ -67,13 +72,15 @@ Restoration comparisons showing (left to right): **NoisyLR Observation (128x128)
 | **Sample #02** | ![Sample 02](results/triplet_02_000007.png) |
 | **Sample #03** | ![Sample 03](results/triplet_03_000011.png) |
 | **Sample #04** | ![Sample 04](results/triplet_04_000016.png) |
+| **Sample #05** | ![Sample 05](results/triplet_05_000018.png) |
+| **Sample #06** | ![Sample 06](results/triplet_06_000020.png) |
 
 ---
 
-## 4. Repository Structure
+## 4. Repository Structure & Checkpoint Acquisition
 
 ```
-Semicon_Hackathon/
+KLA-Semicon-AI-Restoration/
 ├── configs/
 │   └── config.yaml               # Model hyperparameters & training configurations
 ├── src/
@@ -81,30 +88,36 @@ Semicon_Hackathon/
 │   ├── model.py                  # NAFNet-SR architecture with PixelShuffle & clamping
 │   ├── dataset.py                # Float32 dataset & dataloaders (unclipped inputs)
 │   ├── degradations.py           # Multi-order synthetic degradation generator
-│   ├── loss.py                   # Composite loss (Charbonnier + MS-SSIM + FFT + LPIPS)
+│   ├── loss.py                   # Composite loss (Charbonnier + SSIM + FFT + LPIPS)
 │   └── utils.py                  # PSNR, SSIM, LPIPS metrics & seeding utilities
 ├── weights/
-│   ├── .gitkeep                  # Checkpoints directory
-│   └── README.md                 # Checkpoints instructions & usage
+│   ├── nafnet_sr_best.pt         # Trained model weights (56.15 MB, tracked directly in Git)
+│   └── README.md                 # Checkpoint metadata and usage instructions
 ├── results/
 │   ├── triplet_01_000000.png     # Visual benchmark quadruplets
 │   ├── triplet_02_000007.png
 │   ├── ...
-│   └── visual_triplets_summary.json
+│   ├── visual_triplets_summary.json
+│   └── validation_evaluation_metrics.json
 ├── dummy_in/                     # Sample input files for quick testing
 ├── train.py                      # Training & validation script (Baseline, Overfit, Full)
 ├── inference.py                  # Standalone inference script (--input_dir, --output_dir)
-├── audit_and_split.py            # Deterministic 80/20 train/val dataset splitter (seed=42)
-├── generate_results.py           # Visual comparison & benchmark generator
-├── benchmark_widths.py           # Model capacity & latency benchmarking tool
+├── evaluate_val_set.py           # Evaluation script computing mean ± std metrics (N=640)
+├── benchmark_params.py           # Parameter count verification script
+├── benchmark_latency.py          # GPU-labeled latency and throughput benchmark script
+├── benchmark_widths.py           # Model capacity scaling analysis tool
 ├── test_speed_stability.py       # Speed & numerical stability verification test
-├── monitor.py                    # Live training progress & GPU monitor
-├── solution_presentation.pptx    # Complete editable PowerPoint presentation deck
-├── solution_presentation.pdf     # 12-slide comprehensive presentation deck (PDF)
+├── monitor.py                    # Real-time console training progress monitor
+├── solution_presentation.pptx    # Complete 12-slide editable PowerPoint presentation deck
+├── solution_presentation.pdf     # 12-slide presentation deck (PDF)
 ├── requirements.txt              # Environment dependencies
 ├── LICENSE                       # MIT License
 └── README.md                     # Complete solution documentation
 ```
+
+### Checkpoint Availability
+The trained checkpoint used for all benchmark figures is **`weights/nafnet_sr_best.pt`** (file size: **56.15 MB**).  
+Because it is under GitHub's 100 MB file limit, it is **tracked directly in this Git repository**. No separate download script or external cloud storage is required — cloning the repository provides the ready-to-run weights immediately.
 
 ---
 
@@ -116,15 +129,16 @@ Semicon_Hackathon/
 - **Simplified Channel Attention (SCA):**
   $$\text{SCA}(X) = X \odot \text{Conv}_{1\times1}(\text{GlobalAvgPool}(X))$$
 - **Sub-Pixel Super-Resolution:** Features are upscaled by $2\times$ via sub-pixel `PixelShuffle(2)` followed by output clamping to $[0.0, 1.0]$.
+- **Channel LayerNorm:** Exact channel-wise normalization per feature map preventing numerical divergence on flat wafer regions.
 
 ### Multi-Domain Composite Loss Objective
-$$\mathcal{L}_{\text{total}} = 1.0 \cdot \mathcal{L}_{\text{Charbonnier}} + 0.5 \cdot \mathcal{L}_{\text{MS-SSIM}} + 0.1 \cdot \mathcal{L}_{\text{FFT}} + 0.05 \cdot \mathcal{L}_{\text{LPIPS}}$$
+$$\mathcal{L}_{\text{total}} = 1.0 \cdot \mathcal{L}_{\text{Charbonnier}} + 0.5 \cdot \mathcal{L}_{\text{SSIM}} + 0.1 \cdot \mathcal{L}_{\text{FFT}} + 0.02 \cdot \mathcal{L}_{\text{LPIPS}}$$
 
 1. **Charbonnier Loss:** Robust spatial pixel loss:
    $$\mathcal{L}_{\text{Charbonnier}}(Y, \hat{Y}) = \frac{1}{N}\sum \sqrt{(Y_i - \hat{Y}_i)^2 + \epsilon^2} \quad (\epsilon=10^{-6})$$
-2. **MS-SSIM Loss:** Multi-scale structural similarity preserving structural edges across 5 spatial scales.
-3. **FFT Loss:** Frequency-domain spectral distance preserving fine periodic pitch lines:
-   $$\mathcal{L}_{\text{FFT}} = \|\text{Re}(\mathcal{F}(Y)) - \text{Re}(\mathcal{F}(\hat{Y}))\|_1 + \|\text{Im}(\mathcal{F}(Y)) - \text{Im}(\mathcal{F}(\hat{Y}))\|_1$$
+2. **SSIM Loss:** Structural similarity preserving luminance and contrast across wafer edges.
+3. **2D-FFT Loss:** Frequency-domain spectral distance preserving fine periodic pitch lines:
+   $$\mathcal{L}_{\text{FFT}} = \frac{1}{N}\sum \sqrt{|\mathcal{F}(Y) - \mathcal{F}(\hat{Y})|^2 + \epsilon}$$
 4. **LPIPS Loss:** Perceptual feature distance via pre-trained AlexNet backbone.
 
 ---
@@ -134,13 +148,13 @@ $$\mathcal{L}_{\text{total}} = 1.0 \cdot \mathcal{L}_{\text{Charbonnier}} + 0.5 
 ### Prerequisites
 - OS: Windows / Linux
 - Python: 3.10+
-- CUDA: 12.0+ (NVIDIA RTX / H100 GPU recommended)
+- CUDA: 12.0+ (NVIDIA GPU recommended)
 
 ### Setup Steps
 ```bash
 # Clone the repository
-git clone https://github.com/Ad1thh/Semicon_Hackathon.git
-cd Semicon_Hackathon
+git clone https://github.com/Ad1thh/KLA-Semicon-AI-Restoration.git
+cd KLA-Semicon-AI-Restoration
 
 # Create and activate virtual environment
 python -m venv .venv
@@ -155,39 +169,40 @@ pip install -r requirements.txt
 
 ---
 
-## 7. Execution Guide
+## 7. Execution & Verification Guide
 
-### A. Dataset Audit & Deterministic 80/20 Split (Seed=42)
-Splits the raw dataset deterministically into 80% train and 20% validation sets:
+### A. Parameter Count Verification
+Prints total and trainable parameter counts directly from the model definition:
 ```bash
-python audit_and_split.py
+python benchmark_params.py
 ```
 
-### B. Standard Bicubic Baseline Evaluation
+### B. GPU Latency & Throughput Benchmark
+Measures single-image and batched inference latency programmatically querying the local GPU:
 ```bash
-python train.py --baseline_only
+python benchmark_latency.py
 ```
 
-### C. 2-Pair Karpathy Overfit Sanity Check (PSNR > 40 dB)
-Validates optimization pipeline before launching full training:
+### C. Validation Set Evaluation (Mean ± Std)
+Evaluates Bicubic baseline and NAFNet-SR across all 640 validation images:
 ```bash
-python train.py --overfit_test
+python evaluate_val_set.py
 ```
 
-### D. Full Model Training
+### D. Standalone Inference Evaluation (Strict Evaluator Contract)
+Runs inference accepting **only** `--input_dir` and `--output_dir` (automatically loads `weights/nafnet_sr_best.pt`):
+```bash
+python inference.py --input_dir ./dummy_in --output_dir ./dummy_out
+```
+
+### E. Full Model Training from Scratch
 ```bash
 python train.py --full_train
-```
-
-### E. Standalone Inference Evaluation (Strict Evaluator Contract)
-The inference script strictly adheres to the competition CLI contract accepting **only** `--input_dir` and `--output_dir`:
-```bash
-python inference.py --input_dir ./dummy_in --output_dir ./results/predictions
 ```
 
 ---
 
 ## 8. Compliance & Open-Source Attribution
 
-- **Frameworks & Libraries:** PyTorch (BSD-3), Torchvision (BSD-3), LPIPS (BSD-2), PyTorch-MSSSIM (MIT), NumPy (BSD), Matplotlib (PSF), OpenCV (Apache 2.0).
+- **Frameworks & Libraries:** PyTorch (BSD-3), Torchvision (BSD-3), LPIPS (BSD-2), PyTorch-MSSSIM (MIT), NumPy (BSD), Matplotlib (PSF), python-pptx (MIT).
 - **Compliance:** All datasets, models, and code strictly adhere to competition guidelines and open-source licenses.
