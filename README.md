@@ -96,7 +96,6 @@ KLA-Semicon-AI-Restoration/
 │   ├── benchmark_latency.py      # GPU-labeled latency & throughput benchmark
 │   ├── evaluate_val_set.py       # Validation set evaluation (mean ± std) (N=640)
 │   ├── generate_results.py       # Visual benchmark quadruplets generator
-│   ├── build_presentation.py     # Presentation deck builder (.pptx & .pdf)
 │   ├── audit_and_split.py        # 80/20 train/val dataset splitter
 │   ├── export_weights.py         # Model weight compact exporter
 │   ├── benchmark_widths.py       # Channel width scaling analysis
@@ -114,8 +113,6 @@ KLA-Semicon-AI-Restoration/
 ├── train.py                      # Core training & validation script (Baseline, Overfit, Full)
 ├── inference.py                  # Standalone inference script (--input_dir, --output_dir)
 ├── monitor.py                    # Real-time console training progress monitor
-├── solution_presentation.pptx    # Complete 12-slide editable PowerPoint presentation deck
-├── solution_presentation.pdf     # 12-slide presentation deck (PDF)
 ├── requirements.txt              # Environment dependencies
 ├── LICENSE                       # MIT License
 └── README.md                     # Complete solution documentation
