@@ -158,10 +158,20 @@ class NAFNetSR(nn.Module):
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        # Global residual base: bicubic upsampling of input
-        base = F.interpolate(x, scale_factor=self.scale_factor, mode='bicubic', align_corners=False)
+        H, W = x.shape[-2:]
+        factor = 16
+        pad_h = (factor - H % factor) % factor
+        pad_w = (factor - W % factor) % factor
+        
+        if pad_h > 0 or pad_w > 0:
+            x_pad = F.pad(x, (0, pad_w, 0, pad_h), mode='reflect')
+        else:
+            x_pad = x
 
-        feat = self.intro(x)
+        # Global residual base: bicubic upsampling of input
+        base = F.interpolate(x_pad, scale_factor=self.scale_factor, mode='bicubic', align_corners=False)
+
+        feat = self.intro(x_pad)
         enc_skips = []
         for encoder, down in zip(self.encoders, self.downs):
             feat = encoder(feat)
@@ -179,6 +189,9 @@ class NAFNetSR(nn.Module):
 
         res = self.up_head(feat)
         out = base + res
+
+        if pad_h > 0 or pad_w > 0:
+            out = out[:, :, :H * self.scale_factor, :W * self.scale_factor]
 
         # Mandatory domain invariant constraint: output strictly clamped to [0.0, 1.0]
         return torch.clamp(out, 0.0, 1.0)
