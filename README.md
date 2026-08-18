@@ -53,7 +53,7 @@ Evaluated across all 640 held-out validation pairs ($N=640$ unseen semiconductor
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | **Bicubic Baseline** | 0 *(Param-free)* | 23.0065 ± 3.6535 dB | 0.5286 ± 0.1950 | 0.4428 ± 0.1618 | 0.09 ms / img *(11,437 FPS)* | 0.18 ± 0.21 ms *(5,448 FPS)* | Negligible |
 | **NAFNet-SR (Ours)** | **2.39M** | **28.9823 ± 5.1539 dB** | **0.7762 ± 0.1611** | **0.2633 ± 0.1402** | **7.84 ms / img (127.5 FPS)** | **27.07 ± 2.67 ms (36.9 FPS)** | **199.5 MB** |
-| **Net Improvement** | **2.39M < 4.0M** | **+5.9758 dB 🚀** | **+0.2476 (+46.8%)** | **-0.1794 (-40.5%)** | **Fab Line Scan Rate** | **Real-Time Interactive** | **< 200 MB** |
+| **Net Improvement** | **2.39M** | **+5.9758 dB 🚀** | **+0.2476 (+46.8%)** | **-0.1794 (-40.5%)** | **Fab Line Scan Rate** | **Real-Time Interactive** | **< 200 MB** |
 
 > **Hardware & Measurement Specifications:**  
 > - Evaluated on an **NVIDIA GeForce RTX 3050 Laptop GPU** (Ampere, CUDA 12.6, 4GB VRAM).  
