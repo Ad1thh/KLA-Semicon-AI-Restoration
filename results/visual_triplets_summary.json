@@ -8,11 +8,11 @@
       "lpips": 0.15677031874656677
     },
     "nafnet_sr": {
-      "psnr": 31.201313687943593,
-      "ssim": 0.8834801912307739,
-      "lpips": 0.12843376398086548
+      "psnr": 32.46952720524119,
+      "ssim": 0.9035016894340515,
+      "lpips": 0.1314440667629242
     },
-    "psnr_gain": 3.963707285857687,
+    "psnr_gain": 5.231920803155287,
     "image_path": "C:\\Users\\hp\\Downloads\\Semicon_Hackathon\\results\\triplet_01_000000.png"
   },
   {
@@ -24,11 +24,11 @@
       "lpips": 0.4284609258174896
     },
     "nafnet_sr": {
-      "psnr": 28.194140312746562,
-      "ssim": 0.6542245745658875,
-      "lpips": 0.3734337389469147
+      "psnr": 28.66643588465129,
+      "ssim": 0.6878543496131897,
+      "lpips": 0.2864055633544922
     },
-    "psnr_gain": 1.9748731242103545,
+    "psnr_gain": 2.4471686961150816,
     "image_path": "C:\\Users\\hp\\Downloads\\Semicon_Hackathon\\results\\triplet_02_000007.png"
   },
   {
@@ -40,11 +40,11 @@
       "lpips": 0.5349016785621643
     },
     "nafnet_sr": {
-      "psnr": 23.466759309511854,
-      "ssim": 0.7048446536064148,
-      "lpips": 0.3623438775539398
+      "psnr": 24.744035481774684,
+      "ssim": 0.7687873840332031,
+      "lpips": 0.17373350262641907
     },
-    "psnr_gain": 2.3754104049994282,
+    "psnr_gain": 3.6526865772622585,
     "image_path": "C:\\Users\\hp\\Downloads\\Semicon_Hackathon\\results\\triplet_03_000011.png"
   },
   {
@@ -56,11 +56,11 @@
       "lpips": 0.5020037293434143
     },
     "nafnet_sr": {
-      "psnr": 27.20680505012702,
-      "ssim": 0.7795445919036865,
-      "lpips": 0.24266129732131958
+      "psnr": 29.199403251702453,
+      "ssim": 0.8125319480895996,
+      "lpips": 0.25303906202316284
     },
-    "psnr_gain": 7.696779848969214,
+    "psnr_gain": 9.689378050544647,
     "image_path": "C:\\Users\\hp\\Downloads\\Semicon_Hackathon\\results\\triplet_04_000016.png"
   },
   {
@@ -72,11 +72,11 @@
       "lpips": 0.27163976430892944
     },
     "nafnet_sr": {
-      "psnr": 23.48787931207911,
-      "ssim": 0.8101807236671448,
-      "lpips": 0.15396654605865479
+      "psnr": 25.233141675512748,
+      "ssim": 0.8478133082389832,
+      "lpips": 0.16610264778137207
     },
-    "psnr_gain": 3.163560376800156,
+    "psnr_gain": 4.908822740233795,
     "image_path": "C:\\Users\\hp\\Downloads\\Semicon_Hackathon\\results\\triplet_05_000018.png"
   },
   {
@@ -88,11 +88,11 @@
       "lpips": 0.5288445353507996
     },
     "nafnet_sr": {
-      "psnr": 31.781933336935353,
-      "ssim": 0.8532627820968628,
-      "lpips": 0.2657003402709961
+      "psnr": 32.40877684987157,
+      "ssim": 0.8623430132865906,
+      "lpips": 0.38420259952545166
     },
-    "psnr_gain": 9.052914310434002,
+    "psnr_gain": 9.67975782337022,
     "image_path": "C:\\Users\\hp\\Downloads\\Semicon_Hackathon\\results\\triplet_06_000020.png"
   }
 ]

@@ -18,8 +18,8 @@
   },
   "full_training_results": {
     "best_epoch": 44,
-    "best_val_psnr": 28.924920295826077,
-    "best_val_ssim": 0.9485380765981972,
+    "best_val_psnr": 28.982245387789625,
+    "best_val_ssim": 0.9491133961826563,
     "total_epochs": 45,
     "checkpoint": "./weights/nafnet_sr_best.pt",
     "trainable_parameters": 2393985
