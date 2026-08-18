@@ -53,7 +53,7 @@ __MACOSX/
 .env.*
 
 # Datasets (Raw large image datasets)
-data/
+# data/
 train/
 val/
 test/
