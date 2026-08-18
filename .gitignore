@@ -54,11 +54,11 @@ __MACOSX/
 
 # Datasets (Raw large image datasets)
 # data/
-train/
-val/
-test/
-NoisyLR/
-GT/
+# train/
+# val/
+# test/
+# NoisyLR/
+# GT/
 *.tar.gz
 *.zip
 *.7z
