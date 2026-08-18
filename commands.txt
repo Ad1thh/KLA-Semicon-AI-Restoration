@@ -1,0 +1,54 @@
+# =========================================================================
+# KLA Semiconductor AI Restoration — Video Demo Command Sequence
+# =========================================================================
+
+# -------------------------------------------------------------------------
+# STEP 0: Prepare Terminal & Virtual Environment
+# -------------------------------------------------------------------------
+# In your terminal (PowerShell / Command Prompt), navigate to project root:
+cd c:\Users\hp\Downloads\Semicon_Hackathon
+
+# Activate the Python virtual environment:
+.venv\Scripts\activate
+
+# Clear the screen for a clean recording view:
+cls
+
+
+# -------------------------------------------------------------------------
+# STEP 1: Verify Model Parameter Budget (< 4.0M Limit)
+# Displays: Total Parameters = 2,393,985 (2.39M)
+# -------------------------------------------------------------------------
+python tools/benchmark_params.py
+
+
+# -------------------------------------------------------------------------
+# STEP 2: Run Main Restoration Script
+# (Self-contained standalone submission script)
+# -------------------------------------------------------------------------
+python run.py dummy_in dummy_out
+
+# (Optional: Hackathon official evaluation format with explicit flags)
+python inference.py --input_dir dummy_in --output_dir dummy_out
+
+
+# -------------------------------------------------------------------------
+# STEP 3: Run GPU Latency, Throughput & Memory Benchmark
+# Displays: ~8 ms single latency, 127.5 FPS batched throughput, < 200 MB VRAM
+# -------------------------------------------------------------------------
+python tools/benchmark_latency.py
+
+
+# -------------------------------------------------------------------------
+# STEP 4: (Optional) Open Visual Restoration Comparisons
+# Displays the 4-panel visual comparison: NoisyLR vs Bicubic vs NAFNet-SR vs GT
+# -------------------------------------------------------------------------
+start results/triplet_01_000000.png
+start results/triplet_02_000007.png
+
+
+# -------------------------------------------------------------------------
+# STEP 5: (Optional) Full Validation Set Evaluation
+# Runs metric evaluation across the 640 validation images (PSNR, SSIM, LPIPS)
+# -------------------------------------------------------------------------
+python tools/evaluate_val_set.py
