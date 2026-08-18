@@ -2,6 +2,8 @@
 
 [![CI Pipeline](https://github.com/Ad1thh/KLA-Semicon-AI-Restoration/actions/workflows/ci.yml/badge.svg)](https://github.com/Ad1thh/KLA-Semicon-AI-Restoration/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/Ad1thh/KLA-Semicon-AI-Restoration?color=blue&label=Release)](https://github.com/Ad1thh/KLA-Semicon-AI-Restoration/releases)
+[![Demo Video](https://img.shields.io/badge/Demo%20Video-assets%2FDemoVideo.mp4-red.svg)](assets/DemoVideo.mp4)
+[![Presentation Deck](https://img.shields.io/badge/Presentation%20Deck-Team%20Zynq-orange.svg)](docs/Team_Zynq_Idea_Submission.pptx)
 [![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue.svg)](https://www.python.org/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-ee4c2c.svg)](https://pytorch.org/)
 [![CUDA](https://img.shields.io/badge/CUDA-12.0%2B-76b900.svg)](https://developer.nvidia.com/cuda-zone)
@@ -85,6 +87,17 @@ Visual comparison triplets generated from unseen validation wafer samples showin
 
 ```
 KLA-Semicon-AI-Restoration/
+├── docs/                         # Submission documentation & presentation deck
+│   └── Team_Zynq_Idea_Submission.pptx
+├── assets/                       # Demo video recordings & media assets
+│   └── DemoVideo.mp4
+├── Zynq/                         # Standalone self-contained evaluation package
+│   ├── run.py                    # Zero-dependency inference engine
+│   ├── requirements.txt          # Submission dependencies
+│   ├── README.md                 # Package guide
+│   ├── Team_Zynq_Idea_Submission.pptx
+│   └── models/
+│       └── nafnet_sr_best.pt
 ├── configs/
 │   └── config.yaml               # Model hyperparameters & training configurations
 ├── data/                         # 6,400 image pairs (2,560 Train, 640 Val)
@@ -116,14 +129,17 @@ KLA-Semicon-AI-Restoration/
 ├── dummy_out/                    # Output directory for verified inference
 ├── train.py                      # Training script with --resume and --lr support
 ├── inference.py                  # Standalone inference script (--input_dir, --output_dir)
+├── run.py                        # Unified root execution script
 ├── requirements.txt              # Environment dependencies
 ├── LICENSE                       # MIT License
 └── README.md                     # Complete solution documentation
 ```
 
-### Checkpoint Availability
-The primary trained checkpoint is stored at **`weights/nafnet_sr_best.pt`** (file size: **29.3 MB**).  
-Because it is well under GitHub's 100 MB file limit, it is **tracked directly in this Git repository**. Cloning the repository provides ready-to-run model weights immediately without external cloud dependencies.
+### Submission Assets & Checkpoint Availability
+* **Video Demonstration:** Screen recording walkthrough available at [`assets/DemoVideo.mp4`](assets/DemoVideo.mp4).
+* **Presentation Deck:** Pitch presentation located at [`docs/Team_Zynq_Idea_Submission.pptx`](docs/Team_Zynq_Idea_Submission.pptx) and inside [`Zynq/`](Zynq/).
+* **Model Checkpoint:** The primary trained checkpoint is stored at **`weights/nafnet_sr_best.pt`** (file size: **29.3 MB**), tracked directly in this repository for zero-setup execution.
+
 
 ---
 
