@@ -32,8 +32,8 @@ def log_experiment_metrics(key: str, data: dict):
     with open(yaml_file, "w") as f:
         yaml.dump(current_data, f, default_flow_style=False)
 
-    # Claude-mem json log
-    json_file = os.path.join(log_dir, "claude_mem.json")
+    # Training benchmarks JSON log
+    json_file = os.path.join(log_dir, "training_benchmarks.json")
     json_data = {}
     if os.path.exists(json_file):
         try:
