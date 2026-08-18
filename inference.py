@@ -22,6 +22,11 @@ def load_model(weights_path: str = "./weights/nafnet_sr_best.pt", device: torch.
     dec_blk_nums = [1, 1, 2, 2]
     scale_factor = 2
 
+    if not os.path.exists(weights_path):
+        default_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "weights", "nafnet_sr_best.pt")
+        if os.path.exists(default_path):
+            weights_path = default_path
+
     if os.path.exists(weights_path):
         checkpoint = torch.load(weights_path, map_location=device)
         if isinstance(checkpoint, dict) and "config" in checkpoint and "model" in checkpoint["config"]:
