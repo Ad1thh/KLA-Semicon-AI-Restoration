@@ -53,12 +53,12 @@ __MACOSX/
 .env.*
 
 # Datasets (Raw large image datasets)
-# data/
-# train/
-# val/
-# test/
-# NoisyLR/
-# GT/
+data/
+train/
+val/
+test/
+NoisyLR/
+GT/
 *.tar.gz
 *.zip
 *.7z
