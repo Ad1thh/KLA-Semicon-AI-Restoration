@@ -15,11 +15,11 @@ dataset_audit_split:
   val_ratio: 0.2
   val_samples: 640
 full_training_results:
-  best_epoch: 5
-  best_val_psnr: 27.564251868171368
-  best_val_ssim: 0.7428412602748722
+  best_epoch: 44
+  best_val_psnr: 28.924920295826077
+  best_val_ssim: 0.9485380765981972
   checkpoint: ./weights/nafnet_sr_best.pt
-  total_epochs: 5
+  total_epochs: 45
   trainable_parameters: 2393985
 karpathy_overfit_test:
   final_loss: 0.00993939395993948
