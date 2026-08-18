@@ -30,6 +30,7 @@ Zynq/
 ├── run.py                 # Self-contained standalone inference engine
 ├── requirements.txt       # Environment dependencies
 ├── README.md              # Submission guide & metadata
+├── Idea-Submission-Template_Hackathon-2026_Team_Zynq.pptx # Hackathon presentation deck
 └── models/
     └── nafnet_sr_best.pt  # Trained NAFNet-SR model checkpoint weights
 ```
