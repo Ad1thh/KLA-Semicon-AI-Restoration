@@ -1,6 +1,6 @@
 {
   "num_samples": 640,
-  "eval_time_seconds": 55.45361304283142,
+  "eval_time_seconds": 60.30856490135193,
   "gpu_name": "NVIDIA GeForce RTX 3050 Laptop GPU",
   "bicubic_baseline": {
     "psnr_mean": 23.006496516812454,
@@ -11,11 +11,11 @@
     "lpips_std": 0.16181108506128616
   },
   "nafnet_sr": {
-    "psnr_mean": 28.159739678572958,
-    "psnr_std": 5.021113705724951,
-    "ssim_mean": 0.7661211912520229,
-    "ssim_std": 0.15709399022590528,
-    "lpips_mean": 0.22773849113145844,
-    "lpips_std": 0.12223234279701671
+    "psnr_mean": 27.564294833014095,
+    "psnr_std": 4.775932024818819,
+    "ssim_mean": 0.7428513693856076,
+    "ssim_std": 0.16727231525905903,
+    "lpips_mean": 0.30430466912221166,
+    "lpips_std": 0.16573567447317225
   }
 }

@@ -41,9 +41,9 @@ def generate_visual_triplets(
             in_channels=1,
             out_channels=1,
             width=width,
-            enc_blk_nums=[2, 2, 4, 8],
-            middle_blk_num=12,
-            dec_blk_nums=[2, 2, 2, 2],
+            enc_blk_nums=[1, 2, 4, 8],
+            middle_blk_num=4,
+            dec_blk_nums=[1, 1, 2, 2],
             scale_factor=2
         ).to(device)
 
@@ -57,9 +57,9 @@ def generate_visual_triplets(
             in_channels=1,
             out_channels=1,
             width=width,
-            enc_blk_nums=[2, 2, 4, 8],
-            middle_blk_num=12,
-            dec_blk_nums=[2, 2, 2, 2],
+            enc_blk_nums=[1, 2, 4, 8],
+            middle_blk_num=4,
+            dec_blk_nums=[1, 1, 2, 2],
             scale_factor=2
         ).to(device)
         print(f"[Results Warning] Weights {weights_path} not found. Running with default initialization.")

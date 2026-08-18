@@ -3,13 +3,14 @@ import glob
 import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader
+from concurrent.futures import ThreadPoolExecutor
 
 class SemiconductorDataset(Dataset):
     """
     Dataset for Semiconductor Inspection Image Restoration.
-    Loads paired (degraded, gt) .npy float32 arrays with in-memory caching.
+    Loads paired (degraded, gt) .npy float32 arrays with fast concurrent in-memory caching.
     
-    IMPORTANT RULES:
+    IMPORTANT INVARIANTS:
     1. Single-channel float32 grayscale images.
     2. Input pixel values can exceed [0, 1] due to speckle noise -> NEVER clip at dataloader!
     3. Ground truth (GT) images are strictly in [0, 1].
@@ -43,7 +44,8 @@ class SemiconductorDataset(Dataset):
         self.cached_gt = []
 
         if self.preload:
-            for d_path, g_path in zip(self.degraded_paths, self.gt_paths):
+            def _load_single(pair):
+                d_path, g_path = pair
                 deg = np.load(d_path).astype(np.float32)
                 gt = np.load(g_path).astype(np.float32)
 
@@ -57,11 +59,16 @@ class SemiconductorDataset(Dataset):
                 elif gt.ndim == 3 and gt.shape[-1] == 1:
                     gt = gt.transpose(2, 0, 1)
 
-                # GT strictly clamped to [0, 1]
+                # Domain Invariant: GT strictly clamped to [0, 1]; Degraded input NEVER clipped!
                 gt = np.clip(gt, 0.0, 1.0)
+                return torch.from_numpy(deg).float(), torch.from_numpy(gt).float()
 
-                self.cached_deg.append(torch.from_numpy(deg).float())
-                self.cached_gt.append(torch.from_numpy(gt).float())
+            with ThreadPoolExecutor(max_workers=min(32, os.cpu_count() * 4 if os.cpu_count() else 8)) as executor:
+                results = list(executor.map(_load_single, zip(self.degraded_paths, self.gt_paths)))
+
+            for d_tensor, g_tensor in results:
+                self.cached_deg.append(d_tensor)
+                self.cached_gt.append(g_tensor)
 
     def __len__(self) -> int:
         return len(self.filenames)

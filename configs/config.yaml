@@ -12,22 +12,21 @@ model:
   in_channels: 1
   out_channels: 1
   width: 32
-  enc_blk_nums: [2, 2, 4, 8]
-  middle_blk_num: 12
-  dec_blk_nums: [2, 2, 2, 2]
+  enc_blk_nums: [1, 2, 4, 8]
+  middle_blk_num: 4
+  dec_blk_nums: [1, 1, 2, 2]
 
 train:
   batch_size: 8
-  gradient_accumulation_steps: 1
-  epochs: 10
-  learning_rate: 0.0005
+  gradient_accumulation_steps: 2
+  epochs: 100
+  learning_rate: 0.001
   min_lr: 0.000001
-  amp_enabled: false
+  amp_enabled: true
   checkpoint_dir: "./weights"
   best_weight_path: "./weights/nafnet_sr_best.pt"
 
 loss_weights:
   charbonnier: 1.0
-  ssim: 0.5
-  fft: 0.1
-  lpips: 0.02
+  ms_ssim: 1.0
+  fft: 0.2

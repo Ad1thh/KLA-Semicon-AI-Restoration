@@ -1,0 +1,27 @@
+{
+  "karpathy_overfit_test": {
+    "status": "PASSED",
+    "initial_loss": 0.2775738835334778,
+    "final_loss": 0.00993939395993948,
+    "peak_psnr": 41.38197844807232,
+    "target_psnr": 40.0,
+    "passed_step": 160,
+    "total_steps": 200,
+    "trainable_parameters": 2393985
+  },
+  "bicubic_baseline": {
+    "psnr": 23.006496516812454,
+    "ssim": 0.5286245929193683,
+    "lpips": 0.4427512374240905,
+    "num_samples": 640,
+    "time_seconds": 5.111941576004028
+  },
+  "full_training_results": {
+    "best_epoch": 5,
+    "best_val_psnr": 27.564251868171368,
+    "best_val_ssim": 0.7428412602748722,
+    "total_epochs": 5,
+    "checkpoint": "./weights/nafnet_sr_best.pt",
+    "trainable_parameters": 2393985
+  }
+}

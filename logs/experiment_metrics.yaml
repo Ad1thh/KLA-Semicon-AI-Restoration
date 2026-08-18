@@ -3,7 +3,7 @@ bicubic_baseline:
   num_samples: 640
   psnr: 23.006496516812454
   ssim: 0.5286245929193683
-  time_seconds: 18.982643604278564
+  time_seconds: 5.111941576004028
 dataset_audit_split:
   seed: 42
   total_samples: 3200
@@ -15,14 +15,18 @@ dataset_audit_split:
   val_ratio: 0.2
   val_samples: 640
 full_training_results:
-  best_epoch: 10
-  best_val_lpips: 0.22977240569889545
-  best_val_psnr: 28.15993062896598
-  best_val_ssim: 0.7661223159870133
+  best_epoch: 5
+  best_val_psnr: 27.564251868171368
+  best_val_ssim: 0.7428412602748722
   checkpoint: ./weights/nafnet_sr_best.pt
-  total_epochs: 10
+  total_epochs: 5
+  trainable_parameters: 2393985
 karpathy_overfit_test:
-  final_psnr: 40.233434982661706
+  final_loss: 0.00993939395993948
+  initial_loss: 0.2775738835334778
+  passed_step: 160
+  peak_psnr: 41.38197844807232
   status: PASSED
-  steps_run: 80
   target_psnr: 40.0
+  total_steps: 200
+  trainable_parameters: 2393985

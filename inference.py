@@ -17,19 +17,28 @@ def parse_args():
 def load_model(weights_path: str = "./weights/nafnet_sr_best.pt", device: torch.device = torch.device("cpu")) -> torch.nn.Module:
     """Initialize NAFNet-SR model and load trained weights."""
     width = 32
+    enc_blk_nums = [1, 2, 4, 8]
+    middle_blk_num = 4
+    dec_blk_nums = [1, 1, 2, 2]
+    scale_factor = 2
+
     if os.path.exists(weights_path):
         checkpoint = torch.load(weights_path, map_location=device)
         if isinstance(checkpoint, dict) and "config" in checkpoint and "model" in checkpoint["config"]:
-            width = checkpoint["config"]["model"].get("width", 32)
+            m_cfg = checkpoint["config"]["model"]
+            width = m_cfg.get("width", width)
+            enc_blk_nums = m_cfg.get("enc_blk_nums", enc_blk_nums)
+            middle_blk_num = m_cfg.get("middle_blk_num", middle_blk_num)
+            dec_blk_nums = m_cfg.get("dec_blk_nums", dec_blk_nums)
         
         model = NAFNetSR(
             in_channels=1,
             out_channels=1,
             width=width,
-            enc_blk_nums=[2, 2, 4, 8],
-            middle_blk_num=12,
-            dec_blk_nums=[2, 2, 2, 2],
-            scale_factor=2
+            enc_blk_nums=enc_blk_nums,
+            middle_blk_num=middle_blk_num,
+            dec_blk_nums=dec_blk_nums,
+            scale_factor=scale_factor
         ).to(device)
 
         if isinstance(checkpoint, dict) and "model_state_dict" in checkpoint:
@@ -42,10 +51,10 @@ def load_model(weights_path: str = "./weights/nafnet_sr_best.pt", device: torch.
             in_channels=1,
             out_channels=1,
             width=width,
-            enc_blk_nums=[2, 2, 4, 8],
-            middle_blk_num=12,
-            dec_blk_nums=[2, 2, 2, 2],
-            scale_factor=2
+            enc_blk_nums=enc_blk_nums,
+            middle_blk_num=middle_blk_num,
+            dec_blk_nums=dec_blk_nums,
+            scale_factor=scale_factor
         ).to(device)
         print(f"[Inference Warning] Weights file {weights_path} not found. Running with default initialization.")
 
