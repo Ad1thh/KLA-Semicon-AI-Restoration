@@ -79,3 +79,4 @@ runs/
 wandb/
 scratch/
 dummy_out/
+commands.txt
