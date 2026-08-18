@@ -189,7 +189,7 @@ def run_overfit_test(config: dict, device: torch.device):
     print("=" * 60, flush=True)
     print(f"--- Karpathy Sanity Check PASSED with Peak PSNR: {best_psnr:.2f} dB ---\n", flush=True)
 
-def train_full(config: dict, device: torch.device, target_epochs: int = None):
+def train_full(config: dict, device: torch.device, target_epochs: int = None, resume_path: str = None, override_lr: float = None):
     """
     STEP 4: FULL TRAINING EXECUTION
     - Train on 80/20 train/val split (seed=42)
@@ -249,6 +249,18 @@ def train_full(config: dict, device: torch.device, target_epochs: int = None):
     print(f"Model Architecture: NAFNet-SR | Total Trainable Parameters: {total_params:,} ({total_params/1e6:.2f}M)", flush=True)
     assert total_params < 4_000_000, f"Parameter budget exceeded: {total_params} >= 4,000,000"
 
+    best_val_psnr = -1.0
+    if resume_path and os.path.exists(resume_path):
+        print(f"[*] Loading checkpoint weights from: {resume_path}...", flush=True)
+        ckpt = torch.load(resume_path, map_location=device)
+        if isinstance(ckpt, dict) and "model_state_dict" in ckpt:
+            model.load_state_dict(ckpt["model_state_dict"])
+            best_val_psnr = ckpt.get("val_psnr", -1.0)
+            print(f"[*] Resumed model weights! (Prior Best Val PSNR: {best_val_psnr:.4f} dB)", flush=True)
+        elif isinstance(ckpt, dict):
+            model.load_state_dict(ckpt)
+            print(f"[*] Resumed state dict into model directly.", flush=True)
+
     # Composite Loss
     criterion = CompositeRestorationLoss(
         w_charbonnier=config["loss_weights"]["charbonnier"],
@@ -258,7 +270,7 @@ def train_full(config: dict, device: torch.device, target_epochs: int = None):
     ).to(device)
 
     # Optimizer
-    base_lr = config["train"].get("learning_rate", 1e-3)
+    base_lr = override_lr or config["train"].get("learning_rate", 1e-3)
     optimizer = torch.optim.AdamW(
         model.parameters(),
         lr=base_lr,
@@ -266,10 +278,10 @@ def train_full(config: dict, device: torch.device, target_epochs: int = None):
         weight_decay=1e-4
     )
 
-    # 5-epoch linear warmup + CosineAnnealingLR (T_max=epochs - 5, eta_min=1e-6)
-    warmup_epochs = 5
+    # 5-epoch linear warmup + CosineAnnealingLR
+    warmup_epochs = 3 if resume_path else 5
     if epochs > warmup_epochs:
-        warmup_sched = LinearLR(optimizer, start_factor=0.01, end_factor=1.0, total_iters=warmup_epochs)
+        warmup_sched = LinearLR(optimizer, start_factor=0.1 if resume_path else 0.01, end_factor=1.0, total_iters=warmup_epochs)
         cosine_sched = CosineAnnealingLR(optimizer, T_max=epochs - warmup_epochs, eta_min=config["train"].get("min_lr", 1e-6))
         scheduler = SequentialLR(optimizer, schedulers=[warmup_sched, cosine_sched], milestones=[warmup_epochs])
     else:
@@ -280,7 +292,6 @@ def train_full(config: dict, device: torch.device, target_epochs: int = None):
     scaler = torch.amp.GradScaler('cuda', enabled=amp_enabled)
     print(f"Mixed Precision FP16 Autocast: {'ENABLED' if amp_enabled else 'DISABLED'}", flush=True)
 
-    best_val_psnr = -1.0
     best_metrics = {}
     total_batches = len(train_loader)
 
@@ -381,6 +392,8 @@ def main():
     parser.add_argument("--overfit_test", action="store_true", help="Run 2-pair Karpathy overfit test")
     parser.add_argument("--full_train", action="store_true", help="Run full training pipeline")
     parser.add_argument("--epochs", type=int, default=None, help="Override number of training epochs")
+    parser.add_argument("--resume", type=str, default=None, help="Path to checkpoint .pt to resume/fine-tune from")
+    parser.add_argument("--lr", type=float, default=None, help="Override base learning rate for fine-tuning")
     args = parser.parse_args()
 
     with open(args.config, "r") as f:
@@ -402,7 +415,7 @@ def main():
     elif args.overfit_test:
         run_overfit_test(config, device)
     elif args.full_train:
-        train_full(config, device, target_epochs=args.epochs)
+        train_full(config, device, target_epochs=args.epochs, resume_path=args.resume, override_lr=args.lr)
     else:
         _, val_loader = get_dataloaders(
             train_degraded_dir=config["dataset"]["train_degraded_dir"],
@@ -414,7 +427,7 @@ def main():
         )
         run_bicubic_baseline(val_loader, device)
         run_overfit_test(config, device)
-        train_full(config, device, target_epochs=args.epochs)
+        train_full(config, device, target_epochs=args.epochs, resume_path=args.resume, override_lr=args.lr)
 
 if __name__ == "__main__":
     main()
